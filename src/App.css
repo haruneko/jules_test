@@ -1,0 +1,11 @@
+.logo.vite:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+
+.logo.tauri:hover {
+  filter: drop-shadow(0 0 2em #ffc131aa);
+}
+
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
