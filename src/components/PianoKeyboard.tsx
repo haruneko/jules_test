@@ -3,7 +3,7 @@ import React from 'react';
 
 const KEY_HEIGHT = 12; // px - Synchronized with PianoRoll's NOTE_LANE_HEIGHT
 const WHITE_KEY_DEPTH = 80; // px - Visual width of white keys in vertical layout
-const BLACK_KEY_DEPTH = 50; // px - Visual width of black keys
+const BLACK_KEY_DEPTH = 80; // px - Visual width of black keys, now same as white keys
 
 const NUM_KEYS = 128; // MIDI notes 0-127
 const C4_MIDI_NOTE = 60;
@@ -42,7 +42,10 @@ const PianoKeyDisplay: React.FC<PianoKeyDisplayProps> = ({ details, isHighlighte
   const keyStyle: React.CSSProperties = {
     ...style,
     backgroundColor: details.isBlack ? 'black' : 'white',
-    border: '1px solid #333',
+    borderLeft: '1px solid #333',
+    borderRight: '1px solid #333',
+    borderTop: '1px solid #333', // Default top border for all keys
+    borderBottom: details.isBlack ? '1px solid #333' : '1px solid #ccc', // Thinner bottom border for white keys
     boxSizing: 'border-box',
     color: details.isBlack ? 'white' : 'black',
     display: 'flex',
@@ -100,12 +103,13 @@ export const PianoKeyboard: React.FC = () => {
       // They are typically inset. For now, let's place them at the same left edge but with different width.
       // A common vertical style is to have black keys narrower and starting at the same horizontal line as white keys.
       // Or, they could be visually "on top" if white keys are made narrower.
-      // For simplicity, black keys will be less deep and start at same horizontal origin.
-      keySpecificStyle.zIndex = 1; // Ensure black keys are visually on top if any overlap logic added
+    // For simplicity, black keys will have the same depth and start at same horizontal origin.
+    // Their zIndex and color will differentiate them.
+    keySpecificStyle.zIndex = 1;
     } else {
+      // White keys
       keySpecificStyle.width = `${WHITE_KEY_DEPTH}px`;
       keySpecificStyle.top = `${(NUM_KEYS - 1 - i) * KEY_HEIGHT}px`;
-      // currentWhiteKeyTop += KEY_HEIGHT; // This logic changes as top is absolute by pitch
     }
 
     keysToRender.push(
@@ -122,11 +126,9 @@ export const PianoKeyboard: React.FC = () => {
   const totalKeyboardWidth = WHITE_KEY_DEPTH; // Dominated by white key depth
 
   return (
-    <div style={{ border: '1px solid blue', padding: '5px', height: `${totalKeyboardHeight + 10}px`, width: `${totalKeyboardWidth + 10 + 40}px`, position: 'relative', margin: '0', overflowY: 'auto', overflowX: 'hidden' }}>
-      {/* Added width for title */}
-      <h3 style={{ writingMode: 'vertical-rl', textOrientation: 'mixed', textAlign: 'center', margin: `0 0 0 ${totalKeyboardWidth}px`, height: `${totalKeyboardHeight}px`, position: 'absolute', right: '5px', top: '5px' }}>
-        Piano Keyboard
-      </h3>
+    <div style={{ border: '1px solid blue', /* padding: '5px', */ height: `${totalKeyboardHeight}px`, width: `${totalKeyboardWidth}px`, position: 'relative', margin: '0', overflowY: 'auto', overflowX: 'hidden' }}>
+      {/* Title h3 element removed */}
+      {/* Container size adjusted to remove padding allowance */}
       <div style={{ position: 'relative', width: `${totalKeyboardWidth}px`, height: `${totalKeyboardHeight}px` }}>
         {keysToRender}
       </div>

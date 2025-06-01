@@ -13,7 +13,7 @@ const CANVAS_HEIGHT = NUM_PITCHES * NOTE_LANE_HEIGHT;
 
 const PIXELS_PER_TICK = 0.1; // Determines horizontal scale of notes
 const TICKS_PER_BEAT = 480; // Standard ticks per beat, for visual grid reference
-const BEAT_WIDTH = TICKS_PER_BEAT * PIXELS_PER_TICK; // Width of a beat in pixels
+// const BEAT_WIDTH = TICKS_PER_BEAT * PIXELS_PER_TICK; // Width of a beat in pixels // Unused
 // const NUM_MEASURES_DISPLAY = 4; // Example: display 4 measures // Unused
 // const MEASURE_WIDTH = BEAT_WIDTH * 4; // Assuming 4 beats per measure // Unused
 
@@ -120,8 +120,8 @@ export const PianoRoll: React.FC = () => {
   const notesArray = Array.from(notes.values());
 
   return (
-    <div style={{ border: '1px solid green', padding: '10px', overflow: 'auto', position: 'relative' }}>
-      <h2 style={{ position: 'sticky', top: 0, left: 0, background: 'rgba(255,255,255,0.8)', zIndex: 10 }}>Piano Roll Area</h2>
+    <div style={{ border: '1px solid green', /* padding: '10px', */ overflow: 'auto', position: 'relative' }}>
+      {/* <h2 style={{ position: 'sticky', top: 0, left: 0, background: 'rgba(255,255,255,0.8)', zIndex: 10 }}>Piano Roll Area</h2> */}
       <div style={{ position: 'relative', width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}>
         <canvas
           ref={canvasRef}

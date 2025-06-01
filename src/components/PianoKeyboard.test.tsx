@@ -7,7 +7,7 @@ import { PianoKeyboard } from './PianoKeyboard';
 // Updated constants to reflect vertical layout and new dimensions
 const KEY_HEIGHT = 12; // px
 const WHITE_KEY_DEPTH = 80; // px
-const BLACK_KEY_DEPTH = 50; // px
+const BLACK_KEY_DEPTH = 80; // px (now same as white key depth)
 const NUM_KEYS = 128;
 const C4_MIDI_NOTE = 60;
 
@@ -73,22 +73,28 @@ describe('PianoKeyboard', () => {
   test('distinguishes between black and white keys by style', () => {
     render(<PianoKeyboard />);
     const c4Details = getNoteDetails(C4_MIDI_NOTE); // C4 (white)
-    const c4Key = screen.getByTitle(c4Details.name);
+    const c4Key = screen.getByTitle(c4Details.name); // C4 is a white key
     expect(c4Key).toHaveStyle('background-color: gold'); // C4 is highlighted
     expect(c4Key).toHaveStyle(`height: ${KEY_HEIGHT}px`);
     expect(c4Key).toHaveStyle(`width: ${WHITE_KEY_DEPTH}px`);
+    expect(c4Key).toHaveStyle('border-left: 1px solid #333');
+    expect(c4Key).toHaveStyle('border-right: 1px solid #333');
+    expect(c4Key).toHaveStyle('border-top: 1px solid #333');
+    expect(c4Key).toHaveStyle('border-bottom: 1px solid #ccc'); // Specific white key bottom border
 
-    const d4Details = getNoteDetails(62); // D4 (white, not highlighted)
+    const d4Details = getNoteDetails(62); // D4 (another white key, not highlighted)
     const d4Key = screen.getByTitle(d4Details.name);
     expect(d4Key).toHaveStyle('background-color: white');
     expect(d4Key).toHaveStyle(`height: ${KEY_HEIGHT}px`);
     expect(d4Key).toHaveStyle(`width: ${WHITE_KEY_DEPTH}px`);
+    expect(d4Key).toHaveStyle('border-bottom: 1px solid #ccc');
 
-    const cs4Details = getNoteDetails(61); // C#4 (black)
+    const cs4Details = getNoteDetails(61); // C#4 (black key)
     const cs4Key = screen.getByTitle(cs4Details.name);
     expect(cs4Key).toHaveStyle('background-color: black');
     expect(cs4Key).toHaveStyle(`height: ${KEY_HEIGHT}px`);
-    expect(cs4Key).toHaveStyle(`width: ${BLACK_KEY_DEPTH}px`);
+    expect(cs4Key).toHaveStyle(`width: ${BLACK_KEY_DEPTH}px`); // Now same as white key depth
+    expect(cs4Key).toHaveStyle('border-bottom: 1px solid #333'); // Black keys have the standard #333 bottom border
     expect(cs4Key).toHaveStyle('z-index: 1');
   });
 });
