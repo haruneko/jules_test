@@ -4,9 +4,10 @@ import { render, screen, within } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { PianoKeyboard } from './PianoKeyboard';
 
-// Constants from PianoKeyboard.tsx (consider exporting them from the component file for DRYness)
-const WHITE_KEY_WIDTH = 22; // px
-const BLACK_KEY_WIDTH = 13; // px
+// Updated constants to reflect vertical layout and new dimensions
+const KEY_HEIGHT = 12; // px
+const WHITE_KEY_DEPTH = 80; // px
+const BLACK_KEY_DEPTH = 50; // px
 const NUM_KEYS = 128;
 const C4_MIDI_NOTE = 60;
 
@@ -65,29 +66,29 @@ describe('PianoKeyboard', () => {
     const cs5Details = getNoteDetails(73); // C#5
     const cs5KeyElement = screen.getByTitle(cs5Details.name);
     expect(cs5KeyElement).toBeInTheDocument();
-    // Black key labels are shortened, e.g., "C#5" becomes "C#"
-    // Check within the specific C#5 key element for its shortened label
-    expect(within(cs5KeyElement).getByText(cs5Details.name.substring(0,2))).toBeInTheDocument();
+    // Component now displays full label for black keys as well
+    expect(within(cs5KeyElement).getByText(cs5Details.name)).toBeInTheDocument();
   });
 
   test('distinguishes between black and white keys by style', () => {
     render(<PianoKeyboard />);
     const c4Details = getNoteDetails(C4_MIDI_NOTE); // C4 (white)
     const c4Key = screen.getByTitle(c4Details.name);
-    expect(c4Key).toHaveStyle('background-color: gold'); // C4 is highlighted, so gold
-    expect(c4Key).toHaveStyle(`height: 120px`); // WHITE_KEY_HEIGHT
+    expect(c4Key).toHaveStyle('background-color: gold'); // C4 is highlighted
+    expect(c4Key).toHaveStyle(`height: ${KEY_HEIGHT}px`);
+    expect(c4Key).toHaveStyle(`width: ${WHITE_KEY_DEPTH}px`);
 
     const d4Details = getNoteDetails(62); // D4 (white, not highlighted)
     const d4Key = screen.getByTitle(d4Details.name);
     expect(d4Key).toHaveStyle('background-color: white');
-    expect(d4Key).toHaveStyle(`height: 120px`); // WHITE_KEY_HEIGHT
-
+    expect(d4Key).toHaveStyle(`height: ${KEY_HEIGHT}px`);
+    expect(d4Key).toHaveStyle(`width: ${WHITE_KEY_DEPTH}px`);
 
     const cs4Details = getNoteDetails(61); // C#4 (black)
     const cs4Key = screen.getByTitle(cs4Details.name);
     expect(cs4Key).toHaveStyle('background-color: black');
-    expect(cs4Key).toHaveStyle(`height: 75px`); // BLACK_KEY_HEIGHT
-    expect(cs4Key).toHaveStyle(`width: ${BLACK_KEY_WIDTH}px`);
-    expect(cs4Key).toHaveStyle('z-index: 1'); // Black keys should be above white keys
+    expect(cs4Key).toHaveStyle(`height: ${KEY_HEIGHT}px`);
+    expect(cs4Key).toHaveStyle(`width: ${BLACK_KEY_DEPTH}px`);
+    expect(cs4Key).toHaveStyle('z-index: 1');
   });
 });

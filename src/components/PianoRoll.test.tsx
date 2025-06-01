@@ -77,13 +77,27 @@ vi.mock('../contexts/MusicDataContext', () => ({
   useMusicData: vi.fn(),
 }));
 
-global.HTMLCanvasElement.prototype.getContext = vi.fn(() => ({
+global.HTMLCanvasElement.prototype.getContext = vi.fn(() => {
+  let currentFillStyle = '';
+  return {
     clearRect: vi.fn(),
     beginPath: vi.fn(),
     moveTo: vi.fn(),
     lineTo: vi.fn(),
     stroke: vi.fn(),
-})) as any;
+    fillRect: vi.fn(),
+    strokeRect: vi.fn(), // Added as it's used in PianoRoll
+    get fillStyle() {
+      return currentFillStyle;
+    },
+    set fillStyle(style: string) {
+      currentFillStyle = style;
+    },
+    // Mock other properties or methods if they are accessed or called
+    lineWidth: 0, // Default value
+    strokeStyle: '', // Default value
+  };
+}) as any;
 
 describe('PianoRoll', () => {
   beforeEach(() => {

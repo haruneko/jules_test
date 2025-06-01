@@ -24,21 +24,22 @@ Application state, primarily lists of notes and events, is managed using React C
 
 ## UI Features
 
-The application now features a basic interactive music editing interface:
+The application now features a more integrated and visually detailed interactive music editing interface:
 
-*   **Piano Keyboard**: A visual representation of a piano keyboard (`src/components/PianoKeyboard.tsx`) displaying the full MIDI note range (0-127). Keys are labeled with note names (e.g., C4, F#5), and C4 is highlighted as a reference.
-*   **Piano Roll**: A canvas-based piano roll (`src/components/PianoRoll.tsx`) that visually represents musical notes against a grid of pitches and time. It displays notes sourced from the `MusicDataContext`.
-*   **Note Display**: Individual musical notes (`src/components/Note.tsx`) are rendered on the piano roll. These notes are interactive:
-    *   **Selection**: Clicking a note selects it, visually highlighting it.
-    *   **Deletion**: Pressing 'Delete' or 'Backspace' when a note is selected removes it.
-    *   **Lyric Editing**: Pressing 'Enter' on a selected note allows editing its lyric directly on the note.
-*   **Control Area**: A section (`src/components/ControlArea.tsx`) for managing musical events like tempo and time signature changes.
+*   **Vertical Piano Keyboard**: A `src/components/PianoKeyboard.tsx` component displays the full MIDI note range (0-127) in a vertical orientation, with the highest note at the top. Keys are labeled (e.g., C4, F#5), C4 is highlighted, and importantly, each key's height is synchronized with the note lanes in the Piano Roll, providing a direct visual guide for pitch.
+*   **Enhanced Piano Roll**: The `src/components/PianoRoll.tsx` uses a canvas to render its grid. This grid now features a subtle background color for lanes corresponding to black piano keys, improving visual distinction. It displays notes sourced from `MusicDataContext`.
+*   **Note Display & Interaction**: Individual musical notes (`src/components/Note.tsx`) are rendered on the piano roll. These notes support:
+    *   **Selection**: Clicking a note selects it (visual feedback provided).
+    *   **Deletion**: Pressing 'Delete' or 'Backspace' on a selected note removes it.
+    *   **Lyric Editing**: Pressing 'Enter' on a selected note enables direct lyric editing.
+*   **Integrated Layout**: The Piano Keyboard and Piano Roll are displayed in a gapless, side-by-side layout within `src/App.tsx`, ensuring their top edges are aligned for a cohesive user experience.
+*   **Control Area**: A section (`src/components/ControlArea.tsx`) remains for managing musical events like tempo and time signature changes.
 
 ## Key Components
 
-*   **`src/App.tsx`**: The main application component that sets up the overall layout (including the side-by-side Piano Keyboard and Piano Roll) and providers.
-*   **`src/components/PianoRoll.tsx`**: Renders a canvas-based grid for pitch and time. It displays `NoteComponent` instances based on data from `MusicDataContext` and manages note selection.
-*   **`src/components/PianoKeyboard.tsx`**: Displays a visual piano keyboard with all 128 MIDI notes, labels, and a highlighted C4. It's positioned to the left of the Piano Roll.
+*   **`src/App.tsx`**: The main application component that sets up the overall layout, including the tightly integrated side-by-side Piano Keyboard (vertical) and Piano Roll, along with necessary data providers.
+*   **`src/components/PianoRoll.tsx`**: Renders an HTML5 Canvas-based grid representing pitch and time. Note lanes for black keys have a distinct background color. It displays `NoteComponent` instances based on data from `MusicDataContext` and manages note selection.
+*   **`src/components/PianoKeyboard.tsx`**: Displays a vertical visual piano keyboard covering all 128 MIDI notes. Key heights are synchronized with `PianoRoll` note lanes. It includes note labels and a highlighted C4, positioned to the left of the Piano Roll.
 *   **`src/components/Note.tsx`**: Represents an individual musical note as an absolutely positioned HTML element over the Piano Roll. It handles its own display (lyric, selection state) and user interactions (selection, deletion, lyric editing via callbacks).
 *   **`src/components/ControlArea.tsx`**: A component for displaying and interacting with control events like tempo and time signature changes.
 

@@ -14,12 +14,20 @@ const CANVAS_HEIGHT = NUM_PITCHES * NOTE_LANE_HEIGHT;
 const PIXELS_PER_TICK = 0.1; // Determines horizontal scale of notes
 const TICKS_PER_BEAT = 480; // Standard ticks per beat, for visual grid reference
 const BEAT_WIDTH = TICKS_PER_BEAT * PIXELS_PER_TICK; // Width of a beat in pixels
-const NUM_MEASURES_DISPLAY = 4; // Example: display 4 measures
-const MEASURE_WIDTH = BEAT_WIDTH * 4; // Assuming 4 beats per measure
+// const NUM_MEASURES_DISPLAY = 4; // Example: display 4 measures // Unused
+// const MEASURE_WIDTH = BEAT_WIDTH * 4; // Assuming 4 beats per measure // Unused
 
 // Adjust CANVAS_WIDTH to show a certain number of measures/beats
 // const DYNAMIC_CANVAS_WIDTH = MEASURE_WIDTH * NUM_MEASURES_DISPLAY;
 // For now, using fixed CANVAS_WIDTH, but this could be calculated based on content.
+
+const WHITE_KEY_LANE_BG_COLOR = '#FFFFFF'; // Explicitly white for clarity
+const BLACK_KEY_LANE_BG_COLOR = '#F0F0F0'; // Subtle gray for black key lanes
+const OCTAVE_LINE_COLOR = '#CCCCCC'; // Slightly more prominent C lines
+const NORMAL_LINE_COLOR = '#DDDDDD'; // Normal pitch lines
+const BEAT_LINE_COLOR = '#AAAAAA';
+const MEASURE_LINE_COLOR = '#888888';
+
 
 export const PianoRoll: React.FC = () => {
   const { notes, deleteNote, updateNote } = useMusicData();
@@ -34,44 +42,63 @@ export const PianoRoll: React.FC = () => {
 
     context.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-    // Draw horizontal lines for note pitches
-    context.strokeStyle = '#444444'; // Darker grid lines
-    context.lineWidth = 0.5;
-    for (let i = 0; i <= NUM_PITCHES; i++) {
+    // 1. Draw lane backgrounds (white and black keys)
+    for (let pitch = 0; pitch < NUM_PITCHES; pitch++) {
+      const y = (NUM_PITCHES - 1 - pitch) * NOTE_LANE_HEIGHT;
+      const noteInOctave = pitch % 12;
+      const isBlackKey = [1, 3, 6, 8, 10].includes(noteInOctave);
+
+      context.fillStyle = isBlackKey ? BLACK_KEY_LANE_BG_COLOR : WHITE_KEY_LANE_BG_COLOR;
+      context.fillRect(0, y, CANVAS_WIDTH, NOTE_LANE_HEIGHT);
+    }
+
+    // 2. Draw horizontal lines for note pitches
+    for (let i = 0; i <= NUM_PITCHES; i++) { // Iterate to draw NUM_PITCHES + 1 lines
       const y = i * NOTE_LANE_HEIGHT;
-      // Draw thicker lines for octaves (every 12 notes, starting from C)
-      if (i % 12 === 0) {
+
+      // Determine if this line corresponds to the top of a C note lane for octave highlighting
+      // The line at y=i*NOTE_LANE_HEIGHT is the top line of the lane for pitch (NUM_PITCHES - 1 - i)
+      // Or, it's the bottom line of the lane for pitch (NUM_PITCHES - i)
+      // A C note has pitch % 12 === 0.
+      // We want to highlight lines *between* B and C, and the top/bottom lines of C.
+      // Let's consider the pitch whose *bottom* edge this line represents.
+      // The pitch `p` uses lane from `y_top = (NUM_PITCHES - 1 - p) * NOTE_LANE_HEIGHT` to `y_bottom = y_top + NOTE_LANE_HEIGHT`.
+      // So, `y = i * NOTE_LANE_HEIGHT` is the bottom line for pitch `p = NUM_PITCHES - i`.
+      const pitchAtLineBottom = NUM_PITCHES - i;
+      const isOctaveLine = pitchAtLineBottom % 12 === 0; // Line at the bottom of B, top of C (e.g. B2-C3)
+
+      if (isOctaveLine && i !== NUM_PITCHES && i !== 0) { // Don't make canvas border extra thick
+        context.strokeStyle = OCTAVE_LINE_COLOR;
         context.lineWidth = 1;
-        context.strokeStyle = '#666666';
       } else {
+        context.strokeStyle = NORMAL_LINE_COLOR;
         context.lineWidth = 0.5;
-        context.strokeStyle = '#444444';
       }
+
       context.beginPath();
       context.moveTo(0, y);
       context.lineTo(CANVAS_WIDTH, y);
       context.stroke();
     }
+     // Re-draw canvas border explicitly if lines are too faint or to ensure consistency
+    context.strokeStyle = MEASURE_LINE_COLOR; // Use a prominent color for border
+    context.lineWidth = 1;
+    context.strokeRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-    // Draw vertical lines for beats and measures
-    context.strokeStyle = '#555555';
+
+    // 3. Draw vertical lines for beats and measures
     context.lineWidth = 0.5;
-    for (let i = 0; i * BEAT_WIDTH < CANVAS_WIDTH; i++) {
-      const x = i * BEAT_WIDTH;
+    for (let currentTick = 0; currentTick * PIXELS_PER_TICK < CANVAS_WIDTH; currentTick += TICKS_PER_BEAT) {
+      const x = currentTick * PIXELS_PER_TICK;
+      const isMeasureLine = (currentTick / TICKS_PER_BEAT) % 4 === 0; // Assuming 4 beats per measure
+
+      context.strokeStyle = isMeasureLine ? MEASURE_LINE_COLOR : BEAT_LINE_COLOR;
+      context.lineWidth = isMeasureLine ? 1 : 0.5;
+
       context.beginPath();
       context.moveTo(x, 0);
       context.lineTo(x, CANVAS_HEIGHT);
       context.stroke();
-       // Measure lines (thicker)
-      if (i % 4 === 0) { // Assuming 4 beats per measure
-        context.strokeStyle = '#777777';
-        context.lineWidth = 1;
-        context.beginPath();
-        context.moveTo(x,0);
-        context.lineTo(x, CANVAS_HEIGHT);
-        context.stroke();
-        context.strokeStyle = '#555555'; // Reset for beat lines
-      }
     }
   }, []); // Only draw grid once or if dimensions change (not handled here)
 

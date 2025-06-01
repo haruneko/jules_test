@@ -1,10 +1,10 @@
 // src/components/PianoKeyboard.tsx
 import React from 'react';
 
-const WHITE_KEY_WIDTH = 22; // px
-const WHITE_KEY_HEIGHT = 120; // px
-const BLACK_KEY_WIDTH = 13; // px
-const BLACK_KEY_HEIGHT = 75; // px
+const KEY_HEIGHT = 12; // px - Synchronized with PianoRoll's NOTE_LANE_HEIGHT
+const WHITE_KEY_DEPTH = 80; // px - Visual width of white keys in vertical layout
+const BLACK_KEY_DEPTH = 50; // px - Visual width of black keys
+
 const NUM_KEYS = 128; // MIDI notes 0-127
 const C4_MIDI_NOTE = 60;
 
@@ -15,6 +15,7 @@ interface NoteDetails {
   isBlack: boolean;
   octave: number;
   noteInOctave: number; // 0 for C, 1 for C#, ..., 11 for B
+  midiNote: number;
 }
 
 const getNoteDetails = (midiNote: number): NoteDetails => {
@@ -27,46 +28,43 @@ const getNoteDetails = (midiNote: number): NoteDetails => {
     isBlack,
     octave,
     noteInOctave: noteIndex,
+    midiNote,
   };
 };
 
-interface PianoKeyProps {
+interface PianoKeyDisplayProps {
   details: NoteDetails;
   isHighlighted: boolean;
-  left: number;
-  top?: number; // Only for black keys
+  style: React.CSSProperties;
 }
 
-const PianoKeyDisplay: React.FC<PianoKeyProps> = ({ details, isHighlighted, left, top = 0 }) => {
+const PianoKeyDisplay: React.FC<PianoKeyDisplayProps> = ({ details, isHighlighted, style }) => {
   const keyStyle: React.CSSProperties = {
-    position: 'absolute',
-    left: `${left}px`,
-    top: `${top}px`,
-    width: `${details.isBlack ? BLACK_KEY_WIDTH : WHITE_KEY_WIDTH}px`,
-    height: `${details.isBlack ? BLACK_KEY_HEIGHT : WHITE_KEY_HEIGHT}px`,
+    ...style,
     backgroundColor: details.isBlack ? 'black' : 'white',
     border: '1px solid #333',
     boxSizing: 'border-box',
     color: details.isBlack ? 'white' : 'black',
     display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    paddingBottom: '5px',
-    fontSize: '8px',
+    // For vertical keys, align items to the left/start, justify content to center or start
+    flexDirection: 'row', // Labels next to keys or inside, adjust as needed
+    justifyContent: 'center', // Center label horizontally
+    alignItems: 'center', // Center label vertically
+    paddingLeft: '5px', // Padding for the label
+    fontSize: '10px',
+    overflow: 'hidden',
+    whiteSpace: 'nowrap',
     zIndex: details.isBlack ? 1 : 0,
-    transition: 'background-color 0.1s ease', // For potential future hover effects
+    transition: 'background-color 0.1s ease',
   };
 
   if (isHighlighted) {
-    keyStyle.backgroundColor = 'gold'; // Highlight C4
+    keyStyle.backgroundColor = 'gold';
     keyStyle.color = 'black';
   }
 
-  // Shorten label: C#4 -> C#, C4 -> C4
-  const displayLabel = details.name.length > 2 && details.isBlack ?
-                       details.name.substring(0, 2) :
-                       details.name;
+  // Adjust label for very short keys if necessary, or consider other placement
+  const displayLabel = details.name; // Using full name for now
 
   return (
     <div style={keyStyle} title={details.name}>
@@ -76,56 +74,61 @@ const PianoKeyDisplay: React.FC<PianoKeyProps> = ({ details, isHighlighted, left
 };
 
 export const PianoKeyboard: React.FC = () => {
-  const whiteKeys = [];
-  const blackKeys = [];
-  let currentWhiteKeyLeft = 0;
+  const keysToRender = [];
+  // let currentWhiteKeyTop = 0; // This variable was unused
 
-  // First pass: layout white keys and create black key data
-  for (let i = 0; i < NUM_KEYS; i++) {
+  // Iterate from 127 down to 0 for vertical layout (127 at top)
+  for (let i = NUM_KEYS -1 ; i >= 0; i--) {
     const details = getNoteDetails(i);
     const isHighlighted = i === C4_MIDI_NOTE;
 
-    if (!details.isBlack) {
-      whiteKeys.push(
-        <PianoKeyDisplay
-          key={`wk-${i}`}
-          details={details}
-          isHighlighted={isHighlighted}
-          left={currentWhiteKeyLeft}
-        />
-      );
-      // Prepare for black keys associated with this white key
-      // C#(1), D#(3), F#(6), G#(8), A#(10)
-      // Black keys are positioned relative to the white key they follow.
-      // The offset is typically a bit more than half the white key's width.
-      if ([0, 2, 5, 7, 9].includes(details.noteInOctave)) { // C, D, F, G, A
-         // Check if the next note is within range and is black
-        if (i + 1 < NUM_KEYS) {
-            const nextNoteDetails = getNoteDetails(i + 1);
-            if (nextNoteDetails.isBlack) {
-                 blackKeys.push(
-                    <PianoKeyDisplay
-                        key={`bk-${i + 1}`}
-                        details={nextNoteDetails}
-                        isHighlighted={(i + 1) === C4_MIDI_NOTE} // Should not happen for C4
-                        left={currentWhiteKeyLeft + WHITE_KEY_WIDTH - (BLACK_KEY_WIDTH / 2) -1} // Center on the line
-                    />
-                );
-            }
-        }
-      }
-      currentWhiteKeyLeft += WHITE_KEY_WIDTH;
+    const keySpecificStyle: React.CSSProperties = {
+      position: 'absolute',
+      height: `${KEY_HEIGHT}px`,
+      left: `0px`, // White keys start at left edge
+    };
+
+    if (details.isBlack) {
+      keySpecificStyle.width = `${BLACK_KEY_DEPTH}px`;
+      // Black keys are positioned relative to the white key *below* them in pitch (visually above or at same start)
+      // The 'top' is determined by the pitch.
+      // MIDI note 127 is at top: 0 * KEY_HEIGHT
+      // MIDI note 126 is at: 1 * KEY_HEIGHT
+      // MIDI note i is at: (NUM_KEYS - 1 - i) * KEY_HEIGHT
+      keySpecificStyle.top = `${(NUM_KEYS - 1 - i) * KEY_HEIGHT}px`;
+      // Offset black keys slightly to the right, but they don't "overlap" in the same way as horizontal.
+      // They are typically inset. For now, let's place them at the same left edge but with different width.
+      // A common vertical style is to have black keys narrower and starting at the same horizontal line as white keys.
+      // Or, they could be visually "on top" if white keys are made narrower.
+      // For simplicity, black keys will be less deep and start at same horizontal origin.
+      keySpecificStyle.zIndex = 1; // Ensure black keys are visually on top if any overlap logic added
+    } else {
+      keySpecificStyle.width = `${WHITE_KEY_DEPTH}px`;
+      keySpecificStyle.top = `${(NUM_KEYS - 1 - i) * KEY_HEIGHT}px`;
+      // currentWhiteKeyTop += KEY_HEIGHT; // This logic changes as top is absolute by pitch
     }
+
+    keysToRender.push(
+      <PianoKeyDisplay
+        key={i}
+        details={details}
+        isHighlighted={isHighlighted}
+        style={keySpecificStyle}
+      />
+    );
   }
 
-  const totalWidth = currentWhiteKeyLeft; // Total width is based on white keys
+  const totalKeyboardHeight = NUM_KEYS * KEY_HEIGHT;
+  const totalKeyboardWidth = WHITE_KEY_DEPTH; // Dominated by white key depth
 
   return (
-    <div style={{ border: '1px solid blue', padding: '10px', height: `${WHITE_KEY_HEIGHT + 50}px`, position: 'relative', width: `${totalWidth}px`, margin: '20px 0', overflowX: 'auto', overflowY: 'hidden' }}>
-      <h3 style={{ textAlign: 'center', margin: '0 0 10px 0' }}>Piano Keyboard</h3>
-      <div style={{ position: 'relative', width: `${totalWidth}px`, height: `${WHITE_KEY_HEIGHT}px` }}>
-        {whiteKeys}
-        {blackKeys}
+    <div style={{ border: '1px solid blue', padding: '5px', height: `${totalKeyboardHeight + 10}px`, width: `${totalKeyboardWidth + 10 + 40}px`, position: 'relative', margin: '0', overflowY: 'auto', overflowX: 'hidden' }}>
+      {/* Added width for title */}
+      <h3 style={{ writingMode: 'vertical-rl', textOrientation: 'mixed', textAlign: 'center', margin: `0 0 0 ${totalKeyboardWidth}px`, height: `${totalKeyboardHeight}px`, position: 'absolute', right: '5px', top: '5px' }}>
+        Piano Keyboard
+      </h3>
+      <div style={{ position: 'relative', width: `${totalKeyboardWidth}px`, height: `${totalKeyboardHeight}px` }}>
+        {keysToRender}
       </div>
     </div>
   );
