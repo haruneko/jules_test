@@ -19,6 +19,25 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+
+  /* Theming Custom Properties */
+  /* PianoKeyboard Colors */
+  --pkb-white-key-bg: #FFFFFF;
+  --pkb-white-key-text: #212529;
+  --pkb-black-key-bg: #343a40;
+  --pkb-black-key-text: #f8f9fa;
+  --pkb-key-border-color: #333333;
+  --pkb-white-key-bottom-border-color: #cccccc;
+  --pkb-c4-key-bg: #FFD700; /* gold */
+  --pkb-c4-key-text: #000000;
+
+  /* PianoRoll Colors */
+  --proll-white-key-lane-bg: #FFFFFF;
+  --proll-black-key-lane-bg: #f0f0f0;
+  --proll-pitch-line-color: #e0e0e0;
+  --proll-octave-line-color: #b0b0b0;
+  --proll-beat-line-color: #dcdcdc;
+  --proll-measure-line-color: #aaaaaa;
 }
 
 .container {
@@ -99,6 +118,25 @@ button {
   :root {
     color: #f6f6f6;
     background-color: #2f2f2f;
+
+    /* Theming Custom Properties - Dark Theme (can be adjusted) */
+    /* For now, using the same defaults. Consider darker variants if needed. */
+    --pkb-white-key-bg: #FFFFFF; /* White keys usually stay white */
+    --pkb-white-key-text: #212529;
+    --pkb-black-key-bg: #343a40; /* Black keys usually stay dark */
+    --pkb-black-key-text: #f8f9fa;
+    --pkb-key-border-color: #444444; /* Slightly lighter border for dark mode */
+    --pkb-white-key-bottom-border-color: #bbbbbb;
+    --pkb-c4-key-bg: #FFD700; /* gold */
+    --pkb-c4-key-text: #000000;
+
+    /* PianoRoll Colors - Dark Theme */
+    --proll-white-key-lane-bg: #2a2a2e; /* Darker white lanes */
+    --proll-black-key-lane-bg: #202023; /* Darker black key lanes */
+    --proll-pitch-line-color: #404040;
+    --proll-octave-line-color: #5a5a5a;
+    --proll-beat-line-color: #454545;
+    --proll-measure-line-color: #606060;
   }
 
   a:hover {

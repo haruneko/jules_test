@@ -2,6 +2,7 @@
 import React from 'react';
 import { render, screen, within } from '@testing-library/react';
 import '@testing-library/jest-dom';
+// import { vi } from 'vitest'; // No getComputedStyle mock needed if checking for var() strings
 import { PianoKeyboard } from './PianoKeyboard';
 
 // Updated constants to reflect vertical layout and new dimensions
@@ -25,6 +26,10 @@ const getNoteDetails = (midiNote: number) => {
 };
 
 describe('PianoKeyboard', () => {
+  // beforeEach(() => {
+  //   // No longer mocking getComputedStyle here, asserting var() strings directly
+  // });
+
   test('renders all 128 keys', () => {
     render(<PianoKeyboard />);
     // White keys + Black keys.
@@ -46,8 +51,9 @@ describe('PianoKeyboard', () => {
     render(<PianoKeyboard />);
     const c4Details = getNoteDetails(C4_MIDI_NOTE); // C4
     const c4Key = screen.getByTitle(c4Details.name);
-    // Highlighted keys have a 'gold' background color
-    expect(c4Key).toHaveStyle('background-color: gold');
+    // Check style attribute directly for CSS variable strings
+    expect(c4Key.style.backgroundColor).toBe('var(--pkb-c4-key-bg)');
+    expect(c4Key.style.color).toBe('var(--pkb-c4-key-text)');
   });
 
   test('displays correct note names for sample keys', () => {
@@ -74,27 +80,33 @@ describe('PianoKeyboard', () => {
     render(<PianoKeyboard />);
     const c4Details = getNoteDetails(C4_MIDI_NOTE); // C4 (white)
     const c4Key = screen.getByTitle(c4Details.name); // C4 is a white key
-    expect(c4Key).toHaveStyle('background-color: gold'); // C4 is highlighted
-    expect(c4Key).toHaveStyle(`height: ${KEY_HEIGHT}px`);
+    expect(c4Key.style.backgroundColor).toBe('var(--pkb-c4-key-bg)');
+    expect(c4Key.style.color).toBe('var(--pkb-c4-key-text)');
+    expect(c4Key).toHaveStyle(`height: ${KEY_HEIGHT}px`); // Dimension checks should still work
     expect(c4Key).toHaveStyle(`width: ${WHITE_KEY_DEPTH}px`);
-    expect(c4Key).toHaveStyle('border-left: 1px solid #333');
-    expect(c4Key).toHaveStyle('border-right: 1px solid #333');
-    expect(c4Key).toHaveStyle('border-top: 1px solid #333');
-    expect(c4Key).toHaveStyle('border-bottom: 1px solid #ccc'); // Specific white key bottom border
+    expect(c4Key.style.borderWidth).toBe('1px');
+    expect(c4Key.style.borderStyle).toBe('solid');
+    expect(c4Key.style.borderColor).toBe('var(--pkb-key-border-color)'); // Checks all sides implicitly
+    expect(c4Key.style.borderBottomColor).toBe('var(--pkb-white-key-bottom-border-color)'); // Specific override
 
     const d4Details = getNoteDetails(62); // D4 (another white key, not highlighted)
     const d4Key = screen.getByTitle(d4Details.name);
-    expect(d4Key).toHaveStyle('background-color: white');
+    expect(d4Key.style.backgroundColor).toBe('var(--pkb-white-key-bg)');
+    expect(d4Key.style.color).toBe('var(--pkb-white-key-text)');
     expect(d4Key).toHaveStyle(`height: ${KEY_HEIGHT}px`);
     expect(d4Key).toHaveStyle(`width: ${WHITE_KEY_DEPTH}px`);
-    expect(d4Key).toHaveStyle('border-bottom: 1px solid #ccc');
+    expect(d4Key.style.borderColor).toBe('var(--pkb-key-border-color)'); // Check the shorthand
+    expect(d4Key.style.borderBottomColor).toBe('var(--pkb-white-key-bottom-border-color)'); // Check the specific override
+
 
     const cs4Details = getNoteDetails(61); // C#4 (black key)
     const cs4Key = screen.getByTitle(cs4Details.name);
-    expect(cs4Key).toHaveStyle('background-color: black');
+    expect(cs4Key.style.backgroundColor).toBe('var(--pkb-black-key-bg)');
+    expect(cs4Key.style.color).toBe('var(--pkb-black-key-text)');
     expect(cs4Key).toHaveStyle(`height: ${KEY_HEIGHT}px`);
-    expect(cs4Key).toHaveStyle(`width: ${BLACK_KEY_DEPTH}px`); // Now same as white key depth
-    expect(cs4Key).toHaveStyle('border-bottom: 1px solid #333'); // Black keys have the standard #333 bottom border
-    expect(cs4Key).toHaveStyle('z-index: 1');
+    expect(cs4Key).toHaveStyle(`width: ${BLACK_KEY_DEPTH}px`);
+    expect(cs4Key.style.borderBottomColor).toBe('var(--pkb-key-border-color)'); // Black keys use default border color for bottom
+    expect(cs4Key.style.borderColor).toBe('var(--pkb-key-border-color)'); // Ensure all sides use this
+    expect(cs4Key).toHaveStyle('z-index: 1'); // zIndex is a number, toHaveStyle should work
   });
 });

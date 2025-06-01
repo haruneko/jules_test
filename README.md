@@ -48,6 +48,35 @@ The application now features a more integrated and visually detailed interactive
 *   **`src/components/Note.tsx`**: Represents an individual musical note as an absolutely positioned HTML element over the Piano Roll. It handles its own display (lyric, selection state) and user interactions (selection, deletion, lyric editing via callbacks).
 *   **`src/components/ControlArea.tsx`**: A component for displaying and interacting with control events like tempo and time signature changes.
 
+## Theming and Customization
+
+The application's color scheme can be customized using CSS custom properties (variables). These properties are defined in `src/App.css` within the `:root` selector for the default (light) theme, and also within a `@media (prefers-color-scheme: dark)` block providing initial support for a dark theme.
+
+You can customize these colors by:
+*   Modifying their values directly in `src/App.css`.
+*   Overriding them in another CSS file that is imported after `App.css`.
+*   Dynamically changing them using browser developer tools for live experimentation.
+
+### Available CSS Custom Properties:
+
+**Piano Keyboard (`--pkb-`)**
+*   `--pkb-white-key-bg`: Background color for white keys (Default: `#FFFFFF`)
+*   `--pkb-white-key-text`: Text color for white keys (Default: `#212529`)
+*   `--pkb-black-key-bg`: Background color for black keys (Default: `#343a40`)
+*   `--pkb-black-key-text`: Text color for black keys (Default: `#f8f9fa`)
+*   `--pkb-key-border-color`: General border color for keys (Default: `#333333`)
+*   `--pkb-white-key-bottom-border-color`: Specific bottom border color for white keys (Default: `#cccccc`)
+*   `--pkb-c4-key-bg`: Background color for the C4 key (Default: `#FFD700`)
+*   `--pkb-c4-key-text`: Text color for the C4 key (Default: `#000000`)
+
+**Piano Roll (`--proll-`)**
+*   `--proll-white-key-lane-bg`: Background color for white key lanes (Default: `#FFFFFF`)
+*   `--proll-black-key-lane-bg`: Background color for black key lanes (Default: `#f0f0f0`)
+*   `--proll-pitch-line-color`: Color for normal pitch grid lines (Default: `#e0e0e0`)
+*   `--proll-octave-line-color`: Color for octave grid lines (C notes) (Default: `#b0b0b0`)
+*   `--proll-beat-line-color`: Color for beat subdivision lines (Default: `#dcdcdc`)
+*   `--proll-measure-line-color`: Color for measure lines (Default: `#aaaaaa`)
+
 ## Recommended IDE Setup
 
 - [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)

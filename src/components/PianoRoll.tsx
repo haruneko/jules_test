@@ -21,13 +21,13 @@ const TICKS_PER_BEAT = 480; // Standard ticks per beat, for visual grid referenc
 // const DYNAMIC_CANVAS_WIDTH = MEASURE_WIDTH * NUM_MEASURES_DISPLAY;
 // For now, using fixed CANVAS_WIDTH, but this could be calculated based on content.
 
-const WHITE_KEY_LANE_BG_COLOR = '#FFFFFF'; // Explicitly white for clarity
-const BLACK_KEY_LANE_BG_COLOR = '#F0F0F0'; // Subtle gray for black key lanes
-const OCTAVE_LINE_COLOR = '#CCCCCC'; // Slightly more prominent C lines
-const NORMAL_LINE_COLOR = '#DDDDDD'; // Normal pitch lines
-const BEAT_LINE_COLOR = '#AAAAAA';
-const MEASURE_LINE_COLOR = '#888888';
-
+// Default fallback colors if CSS variables are not found (though they should be)
+const DEFAULT_WHITE_LANE_BG = '#FFFFFF';
+const DEFAULT_BLACK_LANE_BG = '#f0f0f0';
+const DEFAULT_PITCH_LINE = '#e0e0e0';
+const DEFAULT_OCTAVE_LINE = '#b0b0b0';
+const DEFAULT_BEAT_LINE = '#dcdcdc';
+const DEFAULT_MEASURE_LINE = '#aaaaaa';
 
 export const PianoRoll: React.FC = () => {
   const { notes, deleteNote, updateNote } = useMusicData();
@@ -40,6 +40,14 @@ export const PianoRoll: React.FC = () => {
     const context = canvas.getContext('2d');
     if (!context) return;
 
+    const computedStyles = getComputedStyle(canvas);
+    const whiteKeyLaneBg = computedStyles.getPropertyValue('--proll-white-key-lane-bg').trim() || DEFAULT_WHITE_LANE_BG;
+    const blackKeyLaneBg = computedStyles.getPropertyValue('--proll-black-key-lane-bg').trim() || DEFAULT_BLACK_LANE_BG;
+    const pitchLineColor = computedStyles.getPropertyValue('--proll-pitch-line-color').trim() || DEFAULT_PITCH_LINE;
+    const octaveLineColor = computedStyles.getPropertyValue('--proll-octave-line-color').trim() || DEFAULT_OCTAVE_LINE;
+    const beatLineColor = computedStyles.getPropertyValue('--proll-beat-line-color').trim() || DEFAULT_BEAT_LINE;
+    const measureLineColor = computedStyles.getPropertyValue('--proll-measure-line-color').trim() || DEFAULT_MEASURE_LINE;
+
     context.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
     // 1. Draw lane backgrounds (white and black keys)
@@ -48,30 +56,21 @@ export const PianoRoll: React.FC = () => {
       const noteInOctave = pitch % 12;
       const isBlackKey = [1, 3, 6, 8, 10].includes(noteInOctave);
 
-      context.fillStyle = isBlackKey ? BLACK_KEY_LANE_BG_COLOR : WHITE_KEY_LANE_BG_COLOR;
+      context.fillStyle = isBlackKey ? blackKeyLaneBg : whiteKeyLaneBg;
       context.fillRect(0, y, CANVAS_WIDTH, NOTE_LANE_HEIGHT);
     }
 
     // 2. Draw horizontal lines for note pitches
     for (let i = 0; i <= NUM_PITCHES; i++) { // Iterate to draw NUM_PITCHES + 1 lines
       const y = i * NOTE_LANE_HEIGHT;
-
-      // Determine if this line corresponds to the top of a C note lane for octave highlighting
-      // The line at y=i*NOTE_LANE_HEIGHT is the top line of the lane for pitch (NUM_PITCHES - 1 - i)
-      // Or, it's the bottom line of the lane for pitch (NUM_PITCHES - i)
-      // A C note has pitch % 12 === 0.
-      // We want to highlight lines *between* B and C, and the top/bottom lines of C.
-      // Let's consider the pitch whose *bottom* edge this line represents.
-      // The pitch `p` uses lane from `y_top = (NUM_PITCHES - 1 - p) * NOTE_LANE_HEIGHT` to `y_bottom = y_top + NOTE_LANE_HEIGHT`.
-      // So, `y = i * NOTE_LANE_HEIGHT` is the bottom line for pitch `p = NUM_PITCHES - i`.
       const pitchAtLineBottom = NUM_PITCHES - i;
-      const isOctaveLine = pitchAtLineBottom % 12 === 0; // Line at the bottom of B, top of C (e.g. B2-C3)
+      const isOctaveLine = pitchAtLineBottom % 12 === 0;
 
-      if (isOctaveLine && i !== NUM_PITCHES && i !== 0) { // Don't make canvas border extra thick
-        context.strokeStyle = OCTAVE_LINE_COLOR;
+      if (isOctaveLine && i !== NUM_PITCHES && i !== 0) {
+        context.strokeStyle = octaveLineColor;
         context.lineWidth = 1;
       } else {
-        context.strokeStyle = NORMAL_LINE_COLOR;
+        context.strokeStyle = pitchLineColor;
         context.lineWidth = 0.5;
       }
 
@@ -80,8 +79,8 @@ export const PianoRoll: React.FC = () => {
       context.lineTo(CANVAS_WIDTH, y);
       context.stroke();
     }
-     // Re-draw canvas border explicitly if lines are too faint or to ensure consistency
-    context.strokeStyle = MEASURE_LINE_COLOR; // Use a prominent color for border
+     // Re-draw canvas border explicitly
+    context.strokeStyle = measureLineColor;
     context.lineWidth = 1;
     context.strokeRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
@@ -90,9 +89,9 @@ export const PianoRoll: React.FC = () => {
     context.lineWidth = 0.5;
     for (let currentTick = 0; currentTick * PIXELS_PER_TICK < CANVAS_WIDTH; currentTick += TICKS_PER_BEAT) {
       const x = currentTick * PIXELS_PER_TICK;
-      const isMeasureLine = (currentTick / TICKS_PER_BEAT) % 4 === 0; // Assuming 4 beats per measure
+      const isMeasureLine = (currentTick / TICKS_PER_BEAT) % 4 === 0;
 
-      context.strokeStyle = isMeasureLine ? MEASURE_LINE_COLOR : BEAT_LINE_COLOR;
+      context.strokeStyle = isMeasureLine ? measureLineColor : beatLineColor;
       context.lineWidth = isMeasureLine ? 1 : 0.5;
 
       context.beginPath();
