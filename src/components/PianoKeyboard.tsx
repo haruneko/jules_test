@@ -41,13 +41,15 @@ interface PianoKeyDisplayProps {
 const PianoKeyDisplay: React.FC<PianoKeyDisplayProps> = ({ details, isHighlighted, style }) => {
   const keyStyle: React.CSSProperties = {
     ...style,
-    backgroundColor: details.isBlack ? 'black' : 'white',
-    borderLeft: '1px solid #333',
-    borderRight: '1px solid #333',
-    borderTop: '1px solid #333', // Default top border for all keys
-    borderBottom: details.isBlack ? '1px solid #333' : '1px solid #ccc', // Thinner bottom border for white keys
+    backgroundColor: details.isBlack ? 'var(--pkb-black-key-bg)' : 'var(--pkb-white-key-bg)',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'var(--pkb-key-border-color)', // Default for all sides
+    borderBottomColor: details.isBlack
+                       ? 'var(--pkb-key-border-color)'
+                       : 'var(--pkb-white-key-bottom-border-color)', // Override for white keys
     boxSizing: 'border-box',
-    color: details.isBlack ? 'white' : 'black',
+    color: details.isBlack ? 'var(--pkb-black-key-text)' : 'var(--pkb-white-key-text)',
     display: 'flex',
     // For vertical keys, align items to the left/start, justify content to center or start
     flexDirection: 'row', // Labels next to keys or inside, adjust as needed
@@ -62,8 +64,8 @@ const PianoKeyDisplay: React.FC<PianoKeyDisplayProps> = ({ details, isHighlighte
   };
 
   if (isHighlighted) {
-    keyStyle.backgroundColor = 'gold';
-    keyStyle.color = 'black';
+    keyStyle.backgroundColor = 'var(--pkb-c4-key-bg)';
+    keyStyle.color = 'var(--pkb-c4-key-text)';
   }
 
   // Adjust label for very short keys if necessary, or consider other placement

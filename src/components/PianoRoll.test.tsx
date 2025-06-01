@@ -42,6 +42,22 @@ vi.mock('./Note', async (importOriginal) => {
 // This allows us to use .mockClear(), .toHaveBeenCalledTimes(), etc.
 const MockedNoteComponent = NoteComponent as ReturnType<typeof vi.fn>;
 
+// Mock window.getComputedStyle
+const mockGetPropertyValue = vi.fn();
+const mockGetComputedStyle = vi.fn(() => ({
+  getPropertyValue: mockGetPropertyValue,
+}));
+global.window.getComputedStyle = mockGetComputedStyle;
+
+// Define mock return values for CSS custom properties
+const MOCK_PROLL_WHITE_KEY_LANE_BG = '#FDFDFD'; // Slightly off-white for testing
+const MOCK_PROLL_BLACK_KEY_LANE_BG = '#EFEFEF';
+const MOCK_PROLL_PITCH_LINE_COLOR = '#D0D0D0';
+const MOCK_PROLL_OCTAVE_LINE_COLOR = '#A0A0A0';
+const MOCK_PROLL_BEAT_LINE_COLOR = '#C8C8C8';
+const MOCK_PROLL_MEASURE_LINE_COLOR = '#909090';
+
+
 const initialMockNotes = new Map<string, NoteType>([
   ['note1', { id: 'note1', tick: 0, pitch: 60, duration: 480, lyric: 'N1', vel: 100, gen:0 }],
   ['note2', { id: 'note2', tick: 240, pitch: 62, duration: 240, lyric: 'N2', vel: 100, gen:0 }],
@@ -102,6 +118,21 @@ global.HTMLCanvasElement.prototype.getContext = vi.fn(() => {
 describe('PianoRoll', () => {
   beforeEach(() => {
     currentMockNotesState = new Map(JSON.parse(JSON.stringify(Array.from(initialMockNotes))));
+
+    // Setup mock implementations for getPropertyValue
+    mockGetPropertyValue.mockImplementation((variableName: string) => {
+      switch (variableName) {
+        case '--proll-white-key-lane-bg': return MOCK_PROLL_WHITE_KEY_LANE_BG;
+        case '--proll-black-key-lane-bg': return MOCK_PROLL_BLACK_KEY_LANE_BG;
+        case '--proll-pitch-line-color': return MOCK_PROLL_PITCH_LINE_COLOR;
+        case '--proll-octave-line-color': return MOCK_PROLL_OCTAVE_LINE_COLOR;
+        case '--proll-beat-line-color': return MOCK_PROLL_BEAT_LINE_COLOR;
+        case '--proll-measure-line-color': return MOCK_PROLL_MEASURE_LINE_COLOR;
+        default: return ''; // Default for unhandled properties
+      }
+    });
+    mockGetComputedStyle.mockClear(); // Clear calls to getComputedStyle itself
+    mockGetPropertyValue.mockClear(); // Clear calls to getPropertyValue
 
     mockDeleteNote.mockClear();
     mockUpdateNote.mockClear();
