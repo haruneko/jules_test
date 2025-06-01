@@ -22,11 +22,31 @@ Application state, primarily lists of notes and events, is managed using React C
 *   Notes and events are stored in `Map` objects, keyed by their unique IDs.
 *   Context provides functions for CRUD operations (Create, Read, Update, Delete) on notes and events (e.g., `addNote`, `deleteEvent`).
 
+## UI Features
+
+The application now features a more integrated and visually detailed interactive music editing interface:
+
+*   **Vertical Piano Keyboard**: The `src/components/PianoKeyboard.tsx` component displays a vertical piano keyboard (MIDI 0-127, highest note at the top).
+    *   Keys are labeled (e.g., C4, F#5), and C4 is highlighted.
+    *   Each key's height is synchronized with `PianoRoll` note lanes for direct pitch alignment.
+    *   White keys feature a bottom border for better visual separation.
+    *   Black keys now have the same depth (interaction width) as white keys, while remaining visually distinct.
+*   **Enhanced Piano Roll**: The `src/components/PianoRoll.tsx` uses a canvas to render its grid.
+    *   This grid features a subtle background color for lanes corresponding to black piano keys, improving visual distinction.
+    *   It displays notes sourced from `MusicDataContext`.
+*   **Note Display & Interaction**: Individual musical notes (`src/components/Note.tsx`) are rendered on the piano roll and support selection, deletion, and lyric editing.
+*   **Integrated Layout & Scrolling**:
+    *   The Piano Keyboard and Piano Roll are displayed in a gapless, side-by-side layout (`src/App.tsx`), aligned at their top edges.
+    *   Vertical scrolling of the Piano Keyboard and Piano Roll areas is synchronized, ensuring a consistent view when navigating through pitches.
+*   **Control Area**: A section (`src/components/ControlArea.tsx`) remains for managing musical events like tempo and time signature changes.
+
 ## Key Components
 
-*   **`src/App.tsx`**: The main application component that sets up the overall layout and providers.
-*   **`src/components/PianoRoll.tsx`**: A placeholder component for displaying and interacting with musical notes. Currently shows a list of notes and allows adding sample notes and deleting existing ones.
-*   **`src/components/ControlArea.tsx`**: A placeholder component for displaying and interacting with control events like tempo and time signature changes. Currently shows a list of events and allows adding sample events and deleting existing ones.
+*   **`src/App.tsx`**: The main application component. It sets up the overall layout, including the tightly integrated side-by-side Piano Keyboard and Piano Roll, and implements their scroll synchronization. It also provides necessary data contexts.
+*   **`src/components/PianoRoll.tsx`**: Renders an HTML5 Canvas-based grid representing pitch and time. Note lanes for black keys have a distinct background color. It displays `NoteComponent` instances based on data from `MusicDataContext` and manages note selection. Its internal padding and title have been removed for a cleaner integration.
+*   **`src/components/PianoKeyboard.tsx`**: Displays a vertical visual piano keyboard covering all 128 MIDI notes. Key heights are synchronized with `PianoRoll` note lanes. White keys have bottom borders, and black keys share the same depth as white keys. It includes note labels and a highlighted C4. Its internal padding and title have been removed.
+*   **`src/components/Note.tsx`**: Represents an individual musical note as an absolutely positioned HTML element over the Piano Roll. It handles its own display (lyric, selection state) and user interactions (selection, deletion, lyric editing via callbacks).
+*   **`src/components/ControlArea.tsx`**: A component for displaying and interacting with control events like tempo and time signature changes.
 
 ## Recommended IDE Setup
 
@@ -70,31 +90,30 @@ This will compile the Rust backend in release mode and build the frontend assets
 
 ## Testing
 
-Currently, testing is primarily done through manual interaction with the UI:
-1.  Run `pnpm tauri dev`.
-2.  Use the "Add Sample Note/Event" buttons to populate data.
-3.  Verify that notes and events are displayed correctly.
-4.  Use the "Delete Note/Event" buttons and verify items are removed.
+Unit tests for key React components have been implemented using [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/) and [Jest](https://jestjs.io/) (via Vitest's Jest-compatible API if using Vitest, or directly if Jest is configured).
 
-Formal automated tests (e.g., using Vitest) are not yet implemented for the data manipulation logic or components but can be added. If Vitest is set up (as suggested by the original template), you could run tests using:
+*   **Test Files**: Located alongside the components they test (e.g., `src/components/PianoRoll.test.tsx`).
+*   **Covered Components**: `PianoKeyboard`, `PianoRoll`, and `NoteComponent` (from `Note.tsx`) have unit tests covering rendering, basic interactions, and callback invocations.
+*   **Mocks**: `useMusicData` context and child components (like `NoteComponent` within `PianoRoll` tests) are mocked where appropriate to isolate component logic.
+
+**Running Tests:**
+
+To run the unit tests, use the following command in the project root directory:
 
 ```bash
 pnpm test
 ```
+This command will execute the test suite and report results. (Ensure Vitest or your chosen test runner is configured in `package.json`'s `scripts` section for this command).
 
-You would need to create test files (e.g., `*.test.ts` or `*.spec.ts`) with actual test cases. For example, to test context functions:
-```typescript
-// Example: src/contexts/MusicDataContext.test.ts
-import { describe, it, expect } from 'vitest';
-// ... import functions from context or a test wrapper
+**Manual Testing:**
 
-describe('MusicDataContext', () => {
-  it('should add a note correctly', () => {
-    // Test logic here
-    // const { result } = renderHook(() => useMusicData(), { wrapper: MusicDataProvider });
-    // act(() => { result.current.addNote(...); });
-    // expect(result.current.notes.size).toBe(1);
-  });
-});
-```
-(The above test snippet is a conceptual example and would require further setup like `@testing-library/react-hooks` or similar for testing hooks.)
+Manual interaction with the UI is still valuable for end-to-end testing:
+
+1.  Run `pnpm tauri dev`.
+2.  Use the "Add Sample Note/Event" buttons in the "Control Area" to populate data if needed (or implement other ways to add notes).
+3.  **Interact with Notes**:
+    *   Click on notes in the Piano Roll to select/deselect them.
+    *   With a note selected, press 'Delete' or 'Backspace' to remove it.
+    *   With a note selected, press 'Enter' to edit its lyric. Type a new lyric and press 'Enter' to confirm or 'Escape' to cancel.
+4.  Verify that the Piano Keyboard correctly displays note positions and highlights C4.
+5.  Verify that events (Tempo, Time Signature) are displayed and can be manipulated in the "Control Area".
