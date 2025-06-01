@@ -22,11 +22,25 @@ Application state, primarily lists of notes and events, is managed using React C
 *   Notes and events are stored in `Map` objects, keyed by their unique IDs.
 *   Context provides functions for CRUD operations (Create, Read, Update, Delete) on notes and events (e.g., `addNote`, `deleteEvent`).
 
+## UI Features
+
+The application now features a basic interactive music editing interface:
+
+*   **Piano Keyboard**: A visual representation of a piano keyboard (`src/components/PianoKeyboard.tsx`) displaying the full MIDI note range (0-127). Keys are labeled with note names (e.g., C4, F#5), and C4 is highlighted as a reference.
+*   **Piano Roll**: A canvas-based piano roll (`src/components/PianoRoll.tsx`) that visually represents musical notes against a grid of pitches and time. It displays notes sourced from the `MusicDataContext`.
+*   **Note Display**: Individual musical notes (`src/components/Note.tsx`) are rendered on the piano roll. These notes are interactive:
+    *   **Selection**: Clicking a note selects it, visually highlighting it.
+    *   **Deletion**: Pressing 'Delete' or 'Backspace' when a note is selected removes it.
+    *   **Lyric Editing**: Pressing 'Enter' on a selected note allows editing its lyric directly on the note.
+*   **Control Area**: A section (`src/components/ControlArea.tsx`) for managing musical events like tempo and time signature changes.
+
 ## Key Components
 
-*   **`src/App.tsx`**: The main application component that sets up the overall layout and providers.
-*   **`src/components/PianoRoll.tsx`**: A placeholder component for displaying and interacting with musical notes. Currently shows a list of notes and allows adding sample notes and deleting existing ones.
-*   **`src/components/ControlArea.tsx`**: A placeholder component for displaying and interacting with control events like tempo and time signature changes. Currently shows a list of events and allows adding sample events and deleting existing ones.
+*   **`src/App.tsx`**: The main application component that sets up the overall layout (including the side-by-side Piano Keyboard and Piano Roll) and providers.
+*   **`src/components/PianoRoll.tsx`**: Renders a canvas-based grid for pitch and time. It displays `NoteComponent` instances based on data from `MusicDataContext` and manages note selection.
+*   **`src/components/PianoKeyboard.tsx`**: Displays a visual piano keyboard with all 128 MIDI notes, labels, and a highlighted C4. It's positioned to the left of the Piano Roll.
+*   **`src/components/Note.tsx`**: Represents an individual musical note as an absolutely positioned HTML element over the Piano Roll. It handles its own display (lyric, selection state) and user interactions (selection, deletion, lyric editing via callbacks).
+*   **`src/components/ControlArea.tsx`**: A component for displaying and interacting with control events like tempo and time signature changes.
 
 ## Recommended IDE Setup
 
@@ -70,31 +84,30 @@ This will compile the Rust backend in release mode and build the frontend assets
 
 ## Testing
 
-Currently, testing is primarily done through manual interaction with the UI:
-1.  Run `pnpm tauri dev`.
-2.  Use the "Add Sample Note/Event" buttons to populate data.
-3.  Verify that notes and events are displayed correctly.
-4.  Use the "Delete Note/Event" buttons and verify items are removed.
+Unit tests for key React components have been implemented using [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/) and [Jest](https://jestjs.io/) (via Vitest's Jest-compatible API if using Vitest, or directly if Jest is configured).
 
-Formal automated tests (e.g., using Vitest) are not yet implemented for the data manipulation logic or components but can be added. If Vitest is set up (as suggested by the original template), you could run tests using:
+*   **Test Files**: Located alongside the components they test (e.g., `src/components/PianoRoll.test.tsx`).
+*   **Covered Components**: `PianoKeyboard`, `PianoRoll`, and `NoteComponent` (from `Note.tsx`) have unit tests covering rendering, basic interactions, and callback invocations.
+*   **Mocks**: `useMusicData` context and child components (like `NoteComponent` within `PianoRoll` tests) are mocked where appropriate to isolate component logic.
+
+**Running Tests:**
+
+To run the unit tests, use the following command in the project root directory:
 
 ```bash
 pnpm test
 ```
+This command will execute the test suite and report results. (Ensure Vitest or your chosen test runner is configured in `package.json`'s `scripts` section for this command).
 
-You would need to create test files (e.g., `*.test.ts` or `*.spec.ts`) with actual test cases. For example, to test context functions:
-```typescript
-// Example: src/contexts/MusicDataContext.test.ts
-import { describe, it, expect } from 'vitest';
-// ... import functions from context or a test wrapper
+**Manual Testing:**
 
-describe('MusicDataContext', () => {
-  it('should add a note correctly', () => {
-    // Test logic here
-    // const { result } = renderHook(() => useMusicData(), { wrapper: MusicDataProvider });
-    // act(() => { result.current.addNote(...); });
-    // expect(result.current.notes.size).toBe(1);
-  });
-});
-```
-(The above test snippet is a conceptual example and would require further setup like `@testing-library/react-hooks` or similar for testing hooks.)
+Manual interaction with the UI is still valuable for end-to-end testing:
+
+1.  Run `pnpm tauri dev`.
+2.  Use the "Add Sample Note/Event" buttons in the "Control Area" to populate data if needed (or implement other ways to add notes).
+3.  **Interact with Notes**:
+    *   Click on notes in the Piano Roll to select/deselect them.
+    *   With a note selected, press 'Delete' or 'Backspace' to remove it.
+    *   With a note selected, press 'Enter' to edit its lyric. Type a new lyric and press 'Enter' to confirm or 'Escape' to cancel.
+4.  Verify that the Piano Keyboard correctly displays note positions and highlights C4.
+5.  Verify that events (Tempo, Time Signature) are displayed and can be manipulated in the "Control Area".
