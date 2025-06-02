@@ -40,6 +40,29 @@ The application now features a more integrated and visually detailed interactive
     *   Vertical scrolling of the Piano Keyboard and Piano Roll areas is synchronized, ensuring a consistent view when navigating through pitches.
 *   **Control Area**: A section (`src/components/ControlArea.tsx`) remains for managing musical events like tempo and time signature changes.
 
+## Menu Structure
+
+The application implements a native menu structure, primarily for debugging and future feature placeholders. The menu is handled via backend events in Rust (`src-tauri/src/lib.rs`) and frontend listeners (`src/App.tsx`).
+
+*   **File**:
+    *   New (event: `file-new`) - Placeholder
+    *   Open (event: `file-open`) - Placeholder
+    *   Import (event: `file-import`) - Placeholder
+    *   Save (event: `file-save`) - Placeholder
+    *   Save As... (event: `file-save-as`) - Placeholder
+*   **Edit**:
+    *   Undo (event: `edit-undo`) - Placeholder
+    *   Redo (event: `edit-redo`) - Placeholder
+    *   Cut (event: `edit-cut`) - Placeholder
+    *   Copy (event: `edit-copy`) - Placeholder
+    *   Paste (event: `edit-paste`) - Placeholder
+*   **Debug**:
+    *   Add Sample Tempo Event (event: `debug-add-sample-tempo-event`) - Functional: Adds a sample tempo event to the track.
+    *   Add Sample Time Signature Event (event: `debug-add-sample-time-signature-event`) - Functional: Adds a sample time signature event to the track.
+    *   Add 'DoReMiReDo' Notes (event: `debug-add-do-re-mi-re-do-notes`) - Functional: Adds a sequence of five notes (C4-D4-E4-D4-C4) to the piano roll.
+
+Note: The declarative definition of this menu in `tauri.conf.json` has been removed due to schema compatibility issues with the current Tauri CLI version. The menu will still appear and function if the OS can render it based on the application's capabilities and event handlers.
+
 ## Key Components
 
 *   **`src/App.tsx`**: The main application component. It sets up the overall layout, including the tightly integrated side-by-side Piano Keyboard and Piano Roll, and implements their scroll synchronization. It also provides necessary data contexts.
@@ -95,8 +118,13 @@ You can customize these colors by:
     ```
     (If you prefer npm or yarn, you might need to adapt this command and ensure `uuid` and `@types/uuid` are installed.)
 
+## Known Issues / Build Limitations
+
+This project currently faces build issues due to conflicts between the required Rust Minimum Supported Version (MSRV) for some dependencies (e.g., `zerovec`, `tauri`, `icu_provider`, `zvariant`, `tinystr`, `yoke`) and the Rust version (1.75.0) available in the testing environment. The provided build and run commands (`pnpm tauri dev`, `pnpm tauri build`) may require a newer Rust toolchain (e.g., Rust 1.81+ or newer for some dependencies) and potentially adjustments to dependency versions in `src-tauri/Cargo.toml` to resolve these conflicts. The `src-tauri/tauri.conf.json` has also been simplified to pass schema validation with the current CLI, which involved removing the declarative `allowlist` and `menu` configurations.
+
 ## Development
 
+Standard commands (see Known Issues above):
 To start the development server and open the app in development mode, run the following command in the project root directory:
 
 ```bash
@@ -107,6 +135,7 @@ This command will compile the Rust backend and start the Vite development server
 
 ## Building
 
+Standard commands (see Known Issues above):
 To build the application for production, use the following command:
 
 ```bash
@@ -136,12 +165,15 @@ This command will execute the test suite and report results. (Ensure Vitest or y
 
 **Manual Testing:**
 
+Standard commands (see Known Issues above):
 Manual interaction with the UI is still valuable for end-to-end testing:
 
 1.  Run `pnpm tauri dev`.
-2.  In the "Control Area", you can use buttons to add sample data:
-    *   "Add Sample Tempo Event" and "Add Sample Time Signature Event" populate respective event types.
-    *   A debug button labeled "Add 'DoReMiReDo' Notes" is available. Clicking this button will add a sequence of five notes (C4-D4-E4-D4-C4, lyrics: "ドレミレド") starting at tick 0, useful for quickly populating the piano roll for testing note display and interaction.
+2.  Use the **Debug Menu** to add sample data:
+    *   `Debug > Add Sample Tempo Event`
+    *   `Debug > Add Sample Time Signature Event`
+    *   `Debug > Add 'DoReMiReDo' Notes`
+    These actions will populate the piano roll and event list for testing.
 3.  **Interact with Notes**:
     *   Click on notes in the Piano Roll to select/deselect them.
     *   With a note selected, press 'Delete' or 'Backspace' to remove it.
