@@ -22,3 +22,22 @@ tauri = { version = "2", features = [] }
 tauri-plugin-opener = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+
+[profile.dev]
+opt-level = 0
+debug = 0 # Or "line-tables-only" for slightly more debug info with less overhead
+codegen-units = 4 # Assumes at least 4 cores, can be adjusted later
+# Consider adding for faster linking on some platforms:
+# strip = "symbols" # Strips symbols from the binary, reducing size and possibly link time.
+
+# Optional: if you have a separate workspace for dependencies
+# [profile.dev.package."*"]
+# opt-level = 0 # Or higher if some deps benefit from it, but 0 is fastest for compilation
+# codegen-units = 4
+
+[profile.release]
+opt-level = 3
+codegen-units = 1    # Reduces parallelism during codegen for potentially better optimization, but increases compile time.
+lto = "thin"         # Enables Thin Link Time Optimization for better runtime performance. "fat" is also an option but slower to compile.
+strip = true         # Strips debug symbols from the binary, reducing size.
+# panic = "abort"    # Optional: can reduce binary size by aborting on panic instead of unwinding. Use with caution.
