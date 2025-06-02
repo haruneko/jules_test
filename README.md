@@ -139,7 +139,9 @@ This command will execute the test suite and report results. (Ensure Vitest or y
 Manual interaction with the UI is still valuable for end-to-end testing:
 
 1.  Run `pnpm tauri dev`.
-2.  Use the "Add Sample Note/Event" buttons in the "Control Area" to populate data if needed (or implement other ways to add notes).
+2.  In the "Control Area", you can use buttons to add sample data:
+    *   "Add Sample Tempo Event" and "Add Sample Time Signature Event" populate respective event types.
+    *   A debug button labeled "Add 'DoReMiReDo' Notes" is available. Clicking this button will add a sequence of five notes (C4-D4-E4-D4-C4, lyrics: "ドレミレド") starting at tick 0, useful for quickly populating the piano roll for testing note display and interaction.
 3.  **Interact with Notes**:
     *   Click on notes in the Piano Roll to select/deselect them.
     *   With a note selected, press 'Delete' or 'Backspace' to remove it.
