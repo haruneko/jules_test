@@ -6,6 +6,31 @@ This project is a prototype for a music editor frontend, focusing on handling da
 
 The application aims to provide a user interface for creating and editing musical scores, with a layout typically featuring a piano roll at the top and a control area at the bottom. This prototype focuses on establishing the foundational data structures and basic UI placeholders.
 
+## Menu Bar
+
+The application now features a native menu bar with the following structure:
+
+*   **File**
+    *   New: *Placeholder*
+    *   Open...: *Placeholder*
+    *   Import...: *Placeholder*
+    *   ---
+    *   Save: *Placeholder*
+    *   Save As...: *Placeholder*
+*   **Edit**
+    *   Undo: *Placeholder*
+    *   Redo: *Placeholder*
+    *   ---
+    *   Cut: *Placeholder*
+    *   Copy: *Placeholder*
+    *   Paste: *Placeholder*
+*   **Debug**
+    *   Add Sample Tempo Event: Triggers the addition of a random tempo event.
+    *   Add Sample Time Signature Event: Triggers the addition of a random time signature event.
+    *   Add 'DoReMiReDo' Notes: Adds a sequence of C4-D4-E4-D4-C4 notes to the piano roll.
+
+Most menu items under "File" and "Edit" are currently placeholders and do not perform any actions. The "Debug" menu items provide the same functionality previously available through buttons in the Control Area.
+
 ## Data Structures
 
 Core data types are defined in `src/types/music.ts`:
@@ -39,14 +64,15 @@ The application now features a more integrated and visually detailed interactive
     *   The Piano Keyboard and Piano Roll are displayed in a gapless, side-by-side layout (`src/App.tsx`), aligned at their top edges.
     *   Vertical scrolling of the Piano Keyboard and Piano Roll areas is synchronized, ensuring a consistent view when navigating through pitches.
 *   **Control Area**: A section (`src/components/ControlArea.tsx`) remains for managing musical events like tempo and time signature changes.
+*   **Native Menu Bar**: Provides access to application functions, including file operations (placeholder), editing actions (placeholder), and debugging tools.
 
 ## Key Components
 
-*   **`src/App.tsx`**: The main application component. It sets up the overall layout, including the tightly integrated side-by-side Piano Keyboard and Piano Roll, and implements their scroll synchronization. It also provides necessary data contexts.
+*   **`src/App.tsx`**: The main application component. It sets up the overall layout, including the tightly integrated side-by-side Piano Keyboard and Piano Roll, and implements their scroll synchronization. It also provides necessary data contexts and handles global event listeners (like those from the Tauri menu).
 *   **`src/components/PianoRoll.tsx`**: Renders an HTML5 Canvas-based grid representing pitch and time. Note lanes for black keys have a distinct background color. It displays `NoteComponent` instances based on data from `MusicDataContext` and manages note selection. Its internal padding and title have been removed for a cleaner integration.
-*   **`src/components/PianoKeyboard.tsx`**: Displays a vertical visual piano keyboard covering all 128 MIDI notes. Key heights are synchronized with `PianoRoll` note lanes. White keys have bottom borders, and black keys share the same depth as white keys. It includes note labels and a highlighted C4. Its internal padding and title have been removed.
+*   **`src/components/PianoKeyboard.tsx`**: Displays a vertical visual piano keyboard covering all 128 MIDI notes. Key heights are synchronized with `PianoRoll` note lanes. It includes note labels and a highlighted C4. Its internal padding and title have been removed.
 *   **`src/components/Note.tsx`**: Represents an individual musical note as an absolutely positioned HTML element over the Piano Roll. It handles its own display (lyric, selection state) and user interactions (selection, deletion, lyric editing via callbacks).
-*   **`src/components/ControlArea.tsx`**: A component for displaying and interacting with control events like tempo and time signature changes.
+*   **`src/components/ControlArea.tsx`**: A component for displaying and interacting with control events like tempo and time signature changes. Debug buttons for adding sample data have been moved to the main application menu under "Debug".
 
 ## Theming and Customization
 
@@ -87,6 +113,7 @@ You can customize these colors by:
     *   Node.js (which includes npm or pnpm/yarn)
     *   Rust and its toolchain (including Cargo)
     *   Follow the Tauri prerequisites guide: [Tauri Prerequisites](https://tauri.app/v1/guides/getting-started/prerequisites)
+    *   Ensure necessary system dependencies for GTK and WebKitGTK are installed (e.g., `libgtk-3-dev`, `libwebkit2gtk-4.1-dev`, `libsoup2.4-dev`, `libjavascriptcoregtk-4.1-dev` on Debian/Ubuntu).
 2.  **Clone the repository** (if applicable)
 3.  **Install dependencies**:
     Navigate to the project root directory and run:
@@ -104,6 +131,13 @@ pnpm tauri dev
 ```
 
 This command will compile the Rust backend and start the Vite development server for the React frontend. Changes in your frontend or backend code will trigger automatic rebuilding and reloading of the application.
+
+### Modifying the Menu
+
+The application menu is defined in Rust within the `src-tauri` directory.
+-   The menu structure (items, submenus) is built in `src-tauri/src/menu.rs`.
+-   Menu event handling (i.e., what happens when a menu item is clicked) is managed in `src-tauri/src/lib.rs` within the `.on_menu_event` handler.
+-   For actions that need to affect the frontend, the Rust handler typically emits a Tauri event (e.g., `app.emit("event-name", payload)`), which is then listened to in the React components (usually in `App.tsx` or a relevant context).
 
 ## Building
 
@@ -139,12 +173,14 @@ This command will execute the test suite and report results. (Ensure Vitest or y
 Manual interaction with the UI is still valuable for end-to-end testing:
 
 1.  Run `pnpm tauri dev`.
-2.  In the "Control Area", you can use buttons to add sample data:
-    *   "Add Sample Tempo Event" and "Add Sample Time Signature Event" populate respective event types.
-    *   A debug button labeled "Add 'DoReMiReDo' Notes" is available. Clicking this button will add a sequence of five notes (C4-D4-E4-D4-C4, lyrics: "ドレミレド") starting at tick 0, useful for quickly populating the piano roll for testing note display and interaction.
+2.  Use the **Debug** menu to add sample data:
+    *   **Debug > Add Sample Tempo Event**: Adds a random tempo event.
+    *   **Debug > Add Sample Time Signature Event**: Adds a random time signature event.
+    *   **Debug > Add 'DoReMiReDo' Notes**: Adds a sequence of five notes (C4-D4-E4-D4-C4, lyrics: "ドレミレド") starting at tick 0. This is useful for quickly populating the piano roll for testing note display and interaction.
 3.  **Interact with Notes**:
     *   Click on notes in the Piano Roll to select/deselect them.
     *   With a note selected, press 'Delete' or 'Backspace' to remove it.
     *   With a note selected, press 'Enter' to edit its lyric. Type a new lyric and press 'Enter' to confirm or 'Escape' to cancel.
 4.  Verify that the Piano Keyboard correctly displays note positions and highlights C4.
 5.  Verify that events (Tempo, Time Signature) are displayed and can be manipulated in the "Control Area".
+6.  Verify that the File and Edit menu items are present but log placeholder messages (or do nothing) as described in the "Menu Bar" section.

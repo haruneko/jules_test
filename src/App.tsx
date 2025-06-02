@@ -1,10 +1,44 @@
 // src/App.tsx
 import { useRef, useEffect } from 'react'; // Removed unused React default import
-import { MusicDataProvider } from './contexts/MusicDataContext';
+import { MusicDataProvider, useMusicData } from './contexts/MusicDataContext'; // Import useMusicData
 import { PianoRoll } from './components/PianoRoll';
 import { PianoKeyboard } from './components/PianoKeyboard';
 import { ControlArea } from './components/ControlArea';
-// import './App.css'; // Or your main CSS file
+import { listen } from '@tauri-apps/api/event'; // Import listen
+
+// Define a component that will handle the event listening
+const DebugActionHandler: React.FC = () => {
+  const {
+    handleAddSampleTempoEvent,
+    handleAddSampleTimeSignatureEvent,
+    handleAddDoReMiReDo
+  } = useMusicData();
+
+  useEffect(() => {
+    const unlisten = listen<{ action: string }>('debug_action', (event) => {
+      console.log('Frontend received debug_action:', event.payload);
+      switch (event.payload.action) {
+        case 'add_sample_tempo_event':
+          handleAddSampleTempoEvent();
+          break;
+        case 'add_sample_time_signature_event':
+          handleAddSampleTimeSignatureEvent();
+          break;
+        case 'add_doremiredo_notes':
+          handleAddDoReMiReDo();
+          break;
+        default:
+          console.warn('Unknown debug action received:', event.payload.action);
+      }
+    });
+
+    return () => {
+      unlisten.then(fn => fn()); // Clean up listener
+    };
+  }, [handleAddSampleTempoEvent, handleAddSampleTimeSignatureEvent, handleAddDoReMiReDo]);
+
+  return null; // This component does not render anything
+};
 
 function App() {
   const keyboardScrollRef = useRef<HTMLDivElement>(null);
@@ -61,6 +95,7 @@ function App() {
 
   return (
     <MusicDataProvider>
+      <DebugActionHandler /> {/* Add the event handler component */}
       <div className="app-container" style={{ padding: '20px', display: 'flex', flexDirection: 'column', height: 'calc(100vh - 40px)' /* Adjust for padding */ }}>
         <h1 style={{ textAlign: 'center', marginBottom: '20px', flexShrink: 0 }}>Music Editor Prototype</h1>
         <div className="main-content" style={{ display: 'flex', flexGrow: 1, overflow: 'hidden', alignItems: 'flex-start' /* Align items to the top */ }}>
