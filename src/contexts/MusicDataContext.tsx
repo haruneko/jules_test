@@ -27,6 +27,10 @@ interface MusicDataContextType {
   updateEvent: (eventId: string, updates: Partial<Omit<TimeSignatureEvent, 'id'>> | Partial<Omit<TempoEvent, 'id'>>) => void;
   deleteEvent: (eventId: string) => void;
   getEventById: (eventId: string) => TimeSignatureEvent | TempoEvent | undefined;
+  // Add the new debug action handlers here
+  handleAddSampleTempoEvent: () => void;
+  handleAddSampleTimeSignatureEvent: () => void;
+  handleAddDoReMiReDo: () => void;
 }
 
 // Create the context with a default undefined value
@@ -129,6 +133,36 @@ export const MusicDataProvider: React.FC<MusicDataProviderProps> = ({ children }
     return events.get(eventId);
   }, [events]);
 
+  // Define the debug action handlers
+  const handleAddSampleTempoEvent = useCallback(() => {
+    addEvent({
+      tick: Math.floor(Math.random() * 1920),
+      bpm: 120 + Math.floor(Math.random() * 60),
+    } as Omit<TempoEvent, 'id'>); // Type assertion still okay here as addEvent handles specifics
+    console.log("Added sample tempo event via context");
+  }, [addEvent]);
+
+  const handleAddSampleTimeSignatureEvent = useCallback(() => {
+    addEvent({
+      tick: Math.floor(Math.random() * 1920),
+      numerator: Math.random() > 0.5 ? 4 : 3,
+      denominator: 4,
+    } as Omit<TimeSignatureEvent, 'id'>); // Type assertion still okay here
+    console.log("Added sample time signature event via context");
+  }, [addEvent]);
+
+  const handleAddDoReMiReDo = useCallback(() => {
+    const notesToAdd: Omit<Note, 'id'>[] = [
+      { tick: 0, pitch: 60, duration: 480, lyric: "ド", vel: 100, gen: 0 },
+      { tick: 480, pitch: 62, duration: 480, lyric: "レ", vel: 100, gen: 0 },
+      { tick: 960, pitch: 64, duration: 480, lyric: "ミ", vel: 100, gen: 0 },
+      { tick: 1440, pitch: 62, duration: 480, lyric: "レ", vel: 100, gen: 0 },
+      { tick: 1920, pitch: 60, duration: 480, lyric: "ド", vel: 100, gen: 0 },
+    ];
+    notesToAdd.forEach(noteData => addNote(noteData));
+    console.log("Added 'DoReMiReDo' notes via context.");
+  }, [addNote]);
+
   return (
     <MusicDataContext.Provider value={{
       notes,
@@ -141,6 +175,9 @@ export const MusicDataProvider: React.FC<MusicDataProviderProps> = ({ children }
       updateEvent,
       deleteEvent,
       getEventById,
+      handleAddSampleTempoEvent, // Expose them
+      handleAddSampleTimeSignatureEvent, // Expose them
+      handleAddDoReMiReDo // Expose them
     }}>
       {children}
     </MusicDataContext.Provider>
